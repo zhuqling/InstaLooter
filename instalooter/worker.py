@@ -8,6 +8,7 @@ import io
 import operator
 import threading
 import time
+import copy
 
 import requests
 import six
@@ -85,10 +86,11 @@ class InstaDownloader(threading.Thread):
         self._set_time(media, filename)
 
     def _download_sidecar(self, media):
-        edges = media.pop('edge_sidecar_to_children')['edges']
+        edges = copy.deepcopy(media['edge_sidecar_to_children']['edges'])
         for edge in six.moves.map(operator.itemgetter('node'), edges):
             for key, value in six.iteritems(media):
-                edge.setdefault(key, value)
+                if not key == 'edge_sidecar_to_children':
+                    edge.setdefault(key, value)
             self._DOWNLOAD_METHODS[edge['__typename']](edge)
 
     def _set_time(self, media, filename):
